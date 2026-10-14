@@ -6,21 +6,17 @@ const PartidaController = {
         try {
             const idEquipeA = PartidaView.perguntarIdEquipe("Digite ID equipe A: ");
             const idEquipeB = PartidaView.perguntarIdEquipe("Digite ID equipe B: ");
-            
+
             const golsA = PartidaView.perguntarGols("Informe os gols da equipe A: ");
             const golsB = PartidaView.perguntarGols("Informe os gols da equipe B: ");
-            
-            const partidaRegistrada = sistema.registrarPartida(idEquipeA, idEquipeB, golsA, golsB);
-            
-            PartidaView.mostrarRegistrada(
-                partidaRegistrada.nomeEquipeA, 
-                golsA, 
-                golsB, 
-                partidaRegistrada.nomeEquipeB
-            );
+
+            // A função do sistema agora devolve o objeto com nomeEquipeA e nomeEquipeB definidos
+            const partida = sistema.registrarPartida(idEquipeA, idEquipeB, golsA, golsB);
+
+            PartidaView.mostrarRegistrada(partida.nomeEquipeA, partida.golsA, partida.golsB, partida.nomeEquipeB);
         } catch (erro) {
             PartidaView.mostrarErroCadastro(erro.message);
-        }     
+        }
     },
 
     listar(sistema) {

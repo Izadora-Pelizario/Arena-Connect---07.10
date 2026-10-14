@@ -209,37 +209,39 @@ class ArenaConnect {
     }
 
     registrarPartida(idEquipeA, idEquipeB, golsA, golsB) {
-        const equipeA = this.buscarEquipeOuFalhar(idEquipeA);
+        const equipeA = this.equipes.find(e => e.id === Number(idEquipeA));
+        const equipeB = this.equipes.find(e => e.id === Number(idEquipeB));
 
-        const equipeB = this.buscarEquipeOuFalhar(idEquipeB);
+        if (!equipeA || !equipeB) {
+            throw new Error("Equipe não encontrada.");
+        }
 
         if (equipeA.modalidade !== equipeB.modalidade) {
-            throw new Error("As equipes não jogam na mesma modalidade");
-        }
-        if (equipeA.id === equipeB.id) {
-            throw new Error("Uma equipe não pode jogar contra ela mesma!")
+            throw new Error("As equipes devem ser da mesma modalidade.");
         }
 
-        const partida = CadastroFactory.criarPartida(
-            this.idPartidaContador, idEquipeA, idEquipeB, equipeA.modalidade, golsA, golsB
-        );
-        this.idPartidaContador++;
-        this.partidas.push(partida);
+        // Busca as turmas correspondentes para formar o nome (ex: "2EM", "3EM")
+        const turmaA = this.turmas.find(t => t.id === equipeA.idTurma);
+        const turmaB = this.turmas.find(t => t.id === equipeB.idTurma);
 
-        return {
-            partida,
-            nomeEquipeA: this.#rotularEquipe(idEquipeA),
-            nomeEquipeB: this.#rotularEquipe(idEquipeB),
-        };
+        const nomeEquipeA = turmaA ? turmaA.nome : `Equipe ${equipeA.id}`;
+        const nomeEquipeB = turmaB ? turmaB.nome : `Equipe ${equipeB.id}`;
+
         const novaPartida = {
-            nomeEquipeA: equipeA.nome,
-            nomeEquipeB: equipeB.nome,
+            id: this.idPartidaContador++,
+            idEquipeA: equipeA.id,
+            idEquipeB: equipeB.id,
+            nomeEquipeA: nomeEquipeA,
+            nomeEquipeB: nomeEquipeB,
+            modalidade: equipeA.modalidade,
             golsA: Number(golsA),
-            golsB: Number(golsB),
-            data: new Date()
+            golsB: Number(golsB)
         };
 
+        if (!this.partidas) this.partidas = [];
         this.partidas.push(novaPartida);
+
+        // Retorna o objeto com os nomes já formatados
         return novaPartida;
     }
 
@@ -251,12 +253,26 @@ class ArenaConnect {
     }
 
     listarPartidas() {
-        return this.partidas.map(partida => ({
-            partida,
-            nomeEquipeA: this.#rotularEquipe(partida.equipeA),
-            nomeEquipeB: this.#rotularEquipe(partida.equipeB),
-        }));
-    }
+    return (this.partidas || []).map(p => {
+        // Encontra as equipes pelo ID
+        const eqA = this.equipes.find(e => e.id === Number(p.idEquipeA));
+        const eqB = this.equipes.find(e => e.id === Number(p.idEquipeB));
+
+        // Encontra as turmas para extrair os nomes
+        const turmaA = eqA ? this.turmas.find(t => t.id === eqA.idTurma) : null;
+        const turmaB = eqB ? this.turmas.find(t => t.id === eqB.idTurma) : null;
+
+        // Se a partida já tiver o nome gravado, usa ele. Se não, usa a turma ou o fallback.
+        const nomeEquipeA = p.nomeEquipeA || (turmaA ? turmaA.nome : `Equipe ${p.idEquipeA}`);
+        const nomeEquipeB = p.nomeEquipeB || (turmaB ? turmaB.nome : `Equipe ${p.idEquipeB}`);
+
+        return {
+            partida: p,
+            nomeEquipeA: nomeEquipeA,
+            nomeEquipeB: nomeEquipeB
+        };
+    });
+}
 
 
     // NOVO (Persistência): grava TODO o estado do sistema em JSON. Fica no
@@ -280,10 +296,13 @@ class ArenaConnect {
                 id: p.id,
                 idEquipeA: p.idEquipeA,
                 idEquipeB: p.idEquipeB,
-                golsA: p.golsA,
-                golsB: p.golsB,
-                nomeEquipeA: p.nomeEquipeA,
-                nomeEquipeB: p.nomeEquipeB
+                placar: {
+                    golsA: p.placar ? p.placar.golsA : p.golsA,
+                    golsB: p.placar ? p.placar.golsB : p.golsB
+                },
+                golsA: p.golsA ?? p.placar?.golsA,
+                golsB: p.golsB ?? p.placar?.golsB,
+                modalidade: p.modalidade
             })),
 
             idTurmaContador: this.idTurmaContador,
@@ -298,6 +317,8 @@ class ArenaConnect {
         fs.writeFileSync(ARQUIVO_DADOS, JSON.stringify(dados, null, 2));
         console.log(`✔ Estado salvo em ${ARQUIVO_DADOS}`);
     }
+
+
 
     // NOVO (Persistência): o ponto chave da aula — JSON.parse devolve objetos
     // "crus" (sem os métodos da classe, sem os campos privados funcionando).

@@ -15,11 +15,28 @@ const PartidaView = {
     mostrarErroCadastro(mensagem){
         console.log(`✖ Não foi possível registrar a partida`);
     },
-    listarPartidas(lista){
+    listarPartidas(lista) {
         console.log("\n=== LISTA DE PARTIDAS ===");
-        if (lista.length === 0) return console.log("Nenhuma partida registrada.");
-        lista.forEach(({ partida, nomeEquipeA, nomeEquipeB }) => partida.exibir(nomeEquipeA, nomeEquipeB));
-    }
-}
+        
+        if (!lista || lista.length === 0) {
+            console.log("Nenhuma partida registrada ainda.\n");
+            return;
+        }
 
+        lista.forEach(item => {
+            // Suporta tanto o formato envelopado { partida, nomeEquipeA, nomeEquipeB } 
+            // quanto o objeto de partida direto
+            const p = item.partida || item;
+            const nomeA = item.nomeEquipeA || p.nomeEquipeA || `Equipe ${p.idEquipeA}`;
+            const nomeB = item.nomeEquipeB || p.nomeEquipeB || `Equipe ${p.idEquipeB}`;
+            
+            const golsA = p.golsA ?? p.placar?.golsA ?? 0;
+            const golsB = p.golsB ?? p.placar?.golsB ?? 0;
+
+            console.log(`ID: ${p.id} | ${nomeA} ${golsA} X ${golsB} ${nomeB} | ${p.modalidade || 'Geral'}`);
+        });
+        
+        console.log("");
+    }
+};
 module.exports = PartidaView;
