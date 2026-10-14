@@ -20,6 +20,7 @@ const MenuView = {
  12. Registrar Partida
  13. Listar Partidas
  14. Classificação
+ 99. Salvar Estado
  0. Sair (salva o estado automaticamente)
  ==============================`);
         return prompt("Escolha: ");

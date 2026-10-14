@@ -28,6 +28,7 @@ function main() {
         else if (op === '12') PartidaController.registrarPartida(sistema);
         else if (op === '13') PartidaController.listar(sistema);
         else if (op === '14') ClassificacaoController.exibirClassificacao(sistema);
+        else if (op === '99') sistema.salvarEstado(sistema);
         else if (op === '0') {
             sistema.salvarEstado(); // NOVO: grava tudo antes de sair
             break;

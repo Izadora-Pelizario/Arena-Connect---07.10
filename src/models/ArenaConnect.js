@@ -220,7 +220,7 @@ class ArenaConnect {
             throw new Error("As equipes devem ser da mesma modalidade.");
         }
 
-        // Busca as turmas correspondentes para formar o nome (ex: "2EM", "3EM")
+        // Busca as turmas correspondentes para formar o nome 
         const turmaA = this.turmas.find(t => t.id === equipeA.idTurma);
         const turmaB = this.turmas.find(t => t.id === equipeB.idTurma);
 
@@ -274,16 +274,6 @@ class ArenaConnect {
     });
 }
 
-
-    // NOVO (Persistência): grava TODO o estado do sistema em JSON. Fica no
-    // Model (aqui), nunca na View ou no Controller — persistir dados é regra
-    // de negócio, não interface.
-    //
-    // ARMADILHA (vale para todas as nossas classes): `JSON.stringify(turma)`
-    // sozinho vira `{}` — nome é um campo PRIVADO (#nome) com só um getter;
-    // JSON.stringify só enxerga propriedades próprias e enumeráveis do
-    // objeto, e um getter de classe não é isso. Por isso toda entidade abaixo
-    // é convertida à mão para um objeto comum (id, nome, ...) antes de salvar.
     salvarEstado() {
         const dados = {
             turmas: this.turmas.map(t => ({ id: t.id, nome: t.nome })),
